@@ -1,0 +1,18 @@
+# 自动生成的.gitignore文件
+.claude
+*.log
+node_modules/
+dist/
+build/
+.DS_Store
+.env
+.idea
+tmp/
+*.exe
+uploads/
+logs/
+skyhub-linux-amd64
+*.toml
+.codebuddy
+config.toml
+skyhub.db

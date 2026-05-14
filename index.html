@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Reload 示例</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+        }
+        h1 { font-size: 3rem; margin-bottom: 20px; }
+        p { font-size: 1.2rem; margin-bottom: 10px; opacity: 0.9; }
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 30px;
+        }
+        .time { font-size: 2rem; margin-top: 20px; }
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+        .connected { background: rgba(74, 222, 128, 0.3); }
+        .disconnected { background: rgba(239, 68, 68, 0.3); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hello Live Reload!</h1>
+        <p>修改任何文件，浏览器将自动刷新</p>
+        <div class="card">
+            <p>连接状态: <span id="status" class="status disconnected">连接中...</span></p>
+            <p>当前时间: <span id="time" class="time"></span></p>
+        </div>
+    </div>
+
+    <script>
+        const statusEl = document.getElementById('status');
+        document.getElementById('time').textContent = new Date().toLocaleTimeString();
+
+        function connect() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = protocol + '//' + window.location.host + '/ws';
+
+            const ws = new WebSocket(wsUrl);
+
+            ws.onopen = function() {
+                statusEl.textContent = '已连接';
+                statusEl.className = 'status connected';
+                console.log('Webs: 已连接');
+            };
+
+            ws.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.command === 'reload') {
+                        console.log('Webs: 正在刷新...');
+                        window.location.reload();
+                    }
+                } catch (e) {
+                    console.log('Webs: 收到消息', event.data);
+                }
+            };
+
+            ws.onclose = function() {
+                statusEl.textContent = '断开连接，重连中...';
+                statusEl.className = 'status disconnected';
+                console.log('Webs: 断开连接，重连中...');
+                setTimeout(connect, 1000);
+            };
+
+            ws.onerror = function(err) {
+                console.error('Webs: 错误', err);
+            };
+        }
+
+        connect();
+    </script>
+</body>
+</html>
